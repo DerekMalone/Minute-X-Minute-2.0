@@ -1,0 +1,17 @@
+<div class="min-h-screen flex flex-col items-center justify-center bg-gray-100">
+  <h1 class="text-5xl font-bold mb-8 text-gray-800">Hello World</h1>
+
+  <div class="text-2xl font-bold px-8 py-4 rounded-lg">
+    <div *ngIf="isLoading" class="text-gray-600">
+      Checking connection...
+    </div>
+
+    <div *ngIf="!isLoading && isConnected" class="text-green-700 bg-green-100 border-2 border-green-700">
+      Connected
+    </div>
+
+    <div *ngIf="!isLoading && !isConnected" class="text-red-700 bg-red-100 border-2 border-red-700">
+      {{ errorMessage || 'Not connected' }}
+    </div>
+  </div>
+</div>
