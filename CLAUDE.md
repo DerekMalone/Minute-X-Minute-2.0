@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Technology Stack
 
 - **Backend:** ASP.NET Core 9.0 Web API + Entity Framework Core 9.0 + Npgsql
-- **Frontend:** Next.js 15 (App Router) + TypeScript + Tailwind CSS + shadcn/ui
+- **Frontend:** Next.js 16 (App Router) + TypeScript + Tailwind CSS + shadcn/ui
 - **State Management:** Zustand (global state) + React Query (server state)
 - **Forms:** React Hook Form
 - **Canvas/Whiteboard:** react-konva
@@ -26,12 +26,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
    - `Program.cs`: Application entry point, DI container configuration, CORS setup, JWT authentication
    - `Controllers/`: API endpoint controllers (ApiController attribute, route: `/api/[controller]`)
    - `Data/`: EF Core DbContext and database layer
-   - **Development:** Runs locally via `dotnet run` on `http://localhost:8080`
-   - **Production/Testing:** Runs in Docker container
-   - Connection string uses environment variable for flexibility:
-     - Local dev: `localhost:5432` (postgres container port exposed)
-     - Docker: `postgres:5432` (container-to-container networking)
-   - CORS configured for `http://localhost:3000` (Next.js dev server)
+   - **Development:** Runs in Docker via `docker-compose up postgres backend` on `http://localhost:8080`
+   - **Pre-PR Testing:** Full stack in Docker via `docker-compose up --build`
+   - Connection string: `Host=postgres;Port=5432` (container-to-container networking, works for both dev and testing)
+   - CORS configured for both `http://localhost:3000` (local frontend) and `http://localhost:4200` (Docker frontend)
 
 2. **Frontend SPA** (`frontend/`) - Next.js App Router architecture
    - `src/app/`: App Router pages and layouts (server components by default)
@@ -54,9 +52,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Key Design Decisions
 
-- **Local-first development**: Backend and frontend run locally for fast iteration and debugging
-- **Docker for database only**: PostgreSQL always in Docker (don't install locally)
-- **Docker for integration testing**: Full stack runs in Docker before PRs via `docker-compose up --build`
+- **Docker-based backend development**: Backend and PostgreSQL run in Docker during development; only frontend runs locally
+- **Frontend local for fast iteration**: Next.js runs locally via `npm run dev` for hot reload
+- **Full Docker for pre-PR testing**: All services run in Docker via `docker-compose up --build` before PRs
 - **Tailwind CSS utility-first**: No component-level CSS files, all styling via Tailwind utility classes
 - **shadcn/ui components**: Copy-paste component library (not npm package) for full control
 - **Supabase Auth + .NET JWT**: Supabase handles OAuth, user storage, email verification; .NET validates JWT tokens
@@ -65,22 +63,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Development Commands
 
-### Daily Development Workflow (Local)
+### Daily Development Workflow
 
-**1. Start PostgreSQL**
+**1. Start Backend + PostgreSQL (Docker)**
 ```bash
-docker-compose up postgres
+docker-compose up postgres backend
 ```
-Runs in background. PostgreSQL available at `localhost:5432`.
+Runs backend at `http://localhost:8080` and PostgreSQL at `localhost:5432`.
 
-**2. Start Backend (separate terminal)**
-```bash
-cd backend
-dotnet run
-```
-Backend runs at `http://localhost:8080` with hot reload.
-
-**3. Start Frontend (separate terminal)**
+**2. Start Frontend (separate terminal, local)**
 ```bash
 cd frontend
 npm run dev
@@ -95,7 +86,7 @@ docker-compose up --build
 ```
 Runs all three services in Docker:
 - Backend: `http://localhost:8080`
-- Frontend: `http://localhost:3000`
+- Frontend: `http://localhost:4200`
 - PostgreSQL: `localhost:5432`
 
 ### Stop Services
@@ -122,18 +113,13 @@ docker exec -it sports-postgres psql -U postgres -d sportsdb
 
 ## Database Migrations
 
-**Local development (recommended):**
-```bash
-cd backend
-dotnet ef migrations add MigrationName
-dotnet ef database update
-```
-
-**In Docker (if needed):**
+**Run migrations via Docker:**
 ```bash
 docker exec -it sports-backend dotnet ef migrations add MigrationName
 docker exec -it sports-backend dotnet ef database update
 ```
+
+Note: Since backend runs in Docker, migrations are executed inside the container.
 
 ## Future Architecture (From Initialization Docs)
 
@@ -154,18 +140,17 @@ Current MVP is foundation only. Future expansion includes:
 ## Critical Implementation Details
 
 ### Backend CORS
-CORS policy `AllowFrontend` configured for `http://localhost:3000` (Next.js dev server). Use environment variable in production for actual domain.
+CORS policy `AllowFrontend` configured for both:
+- `http://localhost:3000` (local frontend dev)
+- `http://localhost:4200` (Docker frontend for pre-PR testing)
+
+Use environment variable in production for actual domain.
 
 ### Backend Connection String
-.NET doesn't support bash-style `${VAR:-default}` syntax natively. Use separate config files:
-- `appsettings.json`: Local dev connection string (`Host=localhost;Port=5432;...`)
-- `appsettings.Docker.json`: Docker connection string (`Host=postgres;Port=5432;...`)
-- **Alternative:** Override via docker-compose environment variable:
-  ```yaml
-  environment:
-    - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=sportsdb;Username=postgres;Password=postgres
-  ```
-  (Note: Double underscore `__` for nested config values)
+Backend always runs in Docker during development, so connection string uses Docker networking:
+- `appsettings.json`: `Host=postgres;Port=5432;Database=sportsdb;Username=postgres;Password=postgres`
+
+No environment switching needed — backend and PostgreSQL are always in the same Docker network.
 
 ### Supabase + .NET JWT Integration
 - Supabase issues JWT tokens signed with JWT Secret (from Supabase dashboard)
@@ -176,15 +161,16 @@ CORS policy `AllowFrontend` configured for `http://localhost:3000` (Next.js dev 
 - No database needed for validation - cryptographic signature checking only
 
 ### Frontend API Routing
-Next.js `next.config.mjs` rewrites `/api/*` requests:
-- Local dev: Proxies to `http://localhost:8080/api/*` (local .NET process)
-- Docker: Proxies to `http://backend:8080/api/*` (container networking)
+Next.js `next.config.ts` rewrites `/api/*` requests:
+- Local frontend dev: Proxies to `http://localhost:8080/api/*` (backend Docker container, port exposed)
+- Full Docker: Proxies to `http://backend:8080/api/*` (container-to-container networking)
 - Use environment variable for flexibility
 
-### Docker Networking (Testing Only)
+### Docker Networking
 All services on `sports-network` bridge. Services reference each other by container name:
 - Backend -> Postgres: `postgres:5432`
-- Frontend (Next.js) -> Backend: `backend:8080`
+- Frontend (Docker) -> Backend: `backend:8080`
+- Frontend (local) -> Backend: `localhost:8080` (port exposed to host)
 
 ### Health Check Dependency
 Backend waits for Postgres health check before starting (`depends_on: postgres: condition: service_healthy`).
@@ -194,6 +180,56 @@ Backend waits for Postgres health check before starting (`depends_on: postgres: 
 - Client components (`'use client'`): Required for React Query, Zustand, event handlers, Supabase client-side calls
 - Use `providers.tsx` wrapper pattern for client-only providers in server component layouts
 - Supabase can be used in BOTH server and client components (separate client utilities for each)
+
+## Project Directory Structure
+
+```
+minuteXminute2/
+├── CLAUDE.md
+├── docker-compose.yml
+├── Initialization/
+│   ├── backend.md
+│   ├── database.md
+│   └── frontend.md
+├── README.md
+├── _bmad/                   # BMAD framework config/agents/workflows
+├── _bmad-output/
+│   ├── implementation-artifacts/
+│   ├── planning-artifacts/
+│   └── test-artifacts/
+├── backend/
+│   ├── Backend.csproj
+│   ├── Dockerfile
+│   ├── Program.cs
+│   ├── appsettings.json
+│   ├── Controllers/
+│   │   └── HealthController.cs
+│   └── Data/
+│       └── AppDbContext.cs
+├── docs/
+└── frontend/
+    ├── components.json
+    ├── eslint.config.mjs
+    ├── next-env.d.ts
+    ├── next.config.ts
+    ├── package.json
+    ├── postcss.config.mjs
+    ├── tsconfig.json
+    ├── public/
+    │   ├── file.svg
+    │   ├── globe.svg
+    │   ├── next.svg
+    │   ├── vercel.svg
+    │   └── window.svg
+    └── src/
+        ├── app/
+        │   ├── favicon.ico
+        │   ├── globals.css
+        │   ├── layout.tsx
+        │   └── page.tsx
+        └── lib/
+            └── utils.ts
+```
 
 ## Reference Documentation
 
