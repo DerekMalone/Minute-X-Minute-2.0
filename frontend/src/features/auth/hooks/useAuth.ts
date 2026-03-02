@@ -13,5 +13,16 @@ export function useAuth() {
     return data
   }
 
-  return { signUp }
+  const signIn = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) throw error
+    router.push('/coach/dashboard')
+  }
+
+  const signOut = async () => {
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
+
+  return { signUp, signIn, signOut }
 }
