@@ -14,8 +14,20 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MinuteXMinute",
-  description: "Sports team management for coaches and players",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  title: "MinuteXMinute — Practice Plans for Lacrosse Coaches",
+  description:
+    "Build, run, and share lacrosse practice sessions in minutes. Time-aware drill sequencing for coaches who run a tight practice.",
+  openGraph: {
+    title: "MinuteXMinute — Practice Plans for Lacrosse Coaches",
+    description:
+      "Build, run, and share lacrosse practice sessions in minutes. Time-aware drill sequencing for coaches who run a tight practice.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+    type: "website",
+  },
+  alternates: {
+    canonical: "/",
+  },
 };
 
 export default function RootLayout({
