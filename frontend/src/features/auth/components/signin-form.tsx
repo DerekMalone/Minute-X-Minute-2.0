@@ -18,6 +18,7 @@ export function SigninForm() {
   const { signIn } = useAuth()
   const searchParams = useSearchParams()
   const returnTo = searchParams.get('returnTo') ?? undefined
+  const message = searchParams.get('message')
   const [serverError, setServerError] = useState<string | null>(null)
 
   const form = useForm<SigninFormValues>({
@@ -40,6 +41,10 @@ export function SigninForm() {
           <Image src="/icon-512x512.png" alt="MinuteXMinute" width={48} height={48} priority />
           <h1 className="text-2xl font-bold text-mx-text">Sign in to your account</h1>
         </div>
+
+        {message && (
+          <p className="text-sm text-center text-mx-green">{message}</p>
+        )}
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
@@ -82,6 +87,12 @@ export function SigninForm() {
                 </FormItem>
               )}
             />
+
+            <div className="text-right">
+              <Link href="/forgot-password" className="text-sm text-mx-teal hover:underline">
+                Forgot password?
+              </Link>
+            </div>
 
             {serverError && <p className="text-sm text-mx-red">{serverError}</p>}
 
