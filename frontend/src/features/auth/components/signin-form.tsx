@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -15,6 +16,8 @@ type SigninFormValues = {
 
 export function SigninForm() {
   const { signIn } = useAuth()
+  const searchParams = useSearchParams()
+  const returnTo = searchParams.get('returnTo') ?? undefined
   const [serverError, setServerError] = useState<string | null>(null)
 
   const form = useForm<SigninFormValues>({
@@ -24,7 +27,7 @@ export function SigninForm() {
   const onSubmit = async (values: SigninFormValues) => {
     setServerError(null)
     try {
-      await signIn(values.email, values.password)
+      await signIn(values.email, values.password, returnTo)
     } catch {
       setServerError('Invalid email or password')
     }
