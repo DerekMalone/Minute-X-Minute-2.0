@@ -31,11 +31,5 @@ export function useAuth() {
     if (error) throw error
   }
 
-  const updatePassword = async (password: string) => {
-    const { error } = await supabase.auth.updateUser({ password })
-    if (error) throw error
-    router.push('/login?message=Your+password+has+been+updated.+Please+sign+in.')
-  }
-
-  return { signUp, signIn, signOut, requestPasswordReset, updatePassword }
+  return { signUp, signIn, signOut, requestPasswordReset }
 }

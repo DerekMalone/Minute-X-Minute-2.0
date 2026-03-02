@@ -18,7 +18,9 @@ export function SigninForm() {
   const { signIn } = useAuth()
   const searchParams = useSearchParams()
   const returnTo = searchParams.get('returnTo') ?? undefined
-  const message = searchParams.get('message')
+  const ALLOWED_MESSAGES = ['Your password has been updated. Please sign in.']
+  const rawMessage = searchParams.get('message')
+  const message = rawMessage && ALLOWED_MESSAGES.includes(rawMessage) ? rawMessage : null
   const [serverError, setServerError] = useState<string | null>(null)
 
   const form = useForm<SigninFormValues>({
