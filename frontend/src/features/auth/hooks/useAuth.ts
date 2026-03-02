@@ -13,10 +13,10 @@ export function useAuth() {
     return data
   }
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string, returnTo?: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
-    router.push('/coach/dashboard')
+    router.push(returnTo || '/coach/dashboard')
   }
 
   const signOut = async () => {
