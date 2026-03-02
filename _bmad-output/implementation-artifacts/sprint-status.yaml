@@ -1,0 +1,110 @@
+# generated: 2026-02-28
+# project: minuteXminute2
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-02-28
+project: minuteXminute2
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+
+development_status:
+  # Epic 1: Foundation & Authenticated Onboarding
+  epic-1: in-progress
+  1-1-email-password-account-registration: ready-for-dev
+  1-2-google-oauth-account-registration: backlog
+  1-3-sign-in-and-sign-out: backlog
+  1-4-protected-route-middleware-and-app-route-groups: backlog
+  1-5-public-landing-page-with-seo: backlog
+  1-6-coach-app-shell-and-navigation: backlog
+  1-7-password-reset-forgot-password: backlog
+  epic-1-retrospective: optional
+
+  # Epic 2: Team & Player Onboarding
+  epic-2: backlog
+  2-1-backend-foundation-validateteamaccess-and-soft-delete-filter: backlog
+  2-2-team-creation-and-deletion: backlog
+  2-3-player-invite-link-generation: backlog
+  2-4-player-joins-team-via-invite-link: backlog
+  2-5-roster-management: backlog
+  2-6-player-position-tag-assignment: backlog
+  epic-2-retrospective: optional
+
+  # Epic 3: Drill Library
+  epic-3: backlog
+  3-1-create-a-drill: backlog
+  3-2-edit-a-drill: backlog
+  3-3-delete-a-drill: backlog
+  3-4-view-drill-library-with-filtering: backlog
+  3-5-search-drill-library: backlog
+  3-6-pre-loaded-template-drills-for-coach-cold-start: backlog
+  epic-3-retrospective: optional
+
+  # Epic 4: Whiteboard & Canvas
+  epic-4: backlog
+  4-1-canvas-code-split-boundary: backlog
+  4-2-add-a-whiteboard-canvas-to-a-drill: backlog
+  4-3-drawing-tools-freehand-shapes-text-erase: backlog
+  4-4-slide-management: backlog
+  4-5-retrieve-and-display-saved-canvas: backlog
+  4-6-player-read-only-canvas-view: backlog
+  epic-4-retrospective: optional
+
+  # Epic 5: Practice Planning
+  epic-5: backlog
+  5-1-create-a-practice-plan: backlog
+  5-2-add-drills-to-a-plan-with-live-time-counter: backlog
+  5-3-set-per-drill-time-allocation: backlog
+  5-4-reorder-drills-in-a-plan: backlog
+  5-5-edit-and-delete-a-practice-plan: backlog
+  5-6-designate-active-plan-and-hide-drills-from-players: backlog
+  5-7-practice-plans-list-view: backlog
+  epic-5-retrospective: optional
+
+  # Epic 6: Player Experience
+  epic-6: backlog
+  6-1-player-dashboard-and-active-practice-plan-view: backlog
+  6-2-player-drill-library-browse: backlog
+  6-3-player-drill-detail-and-canvas-view: backlog
+  6-4-mobile-touch-navigation-and-player-shell: backlog
+  epic-6-retrospective: optional
+
+  # Epic 7: Assistant Coach Access (Phase 1.5 — post-pilot stabilization)
+  epic-7: backlog
+  7-0-transactional-email-service-integration: backlog
+  7-1-assistant-coach-invite-by-head-coach: backlog
+  7-2-assistant-coach-invite-acceptance: backlog
+  7-3-assistant-coach-removal: backlog
+  7-4-role-scoped-permissions-head-coach-vs-assistant-coach: backlog
+  epic-7-retrospective: optional

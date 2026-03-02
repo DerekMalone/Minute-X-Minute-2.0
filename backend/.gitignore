@@ -1,0 +1,14 @@
+# Build output
+bin/
+obj/
+
+# User-specific
+*.user
+*.suo
+
+# Environment
+.env
+appsettings.*.local.json
+
+# Misc
+.DS_Store
