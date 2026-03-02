@@ -48,7 +48,7 @@ development_status:
   1-4-protected-route-middleware-and-app-route-groups: done
   1-5-public-landing-page-with-seo: done
   1-6-coach-app-shell-and-navigation: done
-  1-7-password-reset-forgot-password: review
+  1-7-password-reset-forgot-password: done
   epic-1-retrospective: optional
 
   # Epic 2: Team & Player Onboarding

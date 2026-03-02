@@ -2,7 +2,7 @@
 import { useForm } from 'react-hook-form'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useMemo, useState, useEffect, useRef } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -24,30 +24,24 @@ export function ResetPasswordForm() {
 
   // Stable client instance — exchange and updateUser must share the same instance
   const supabase = useMemo(() => createClient(), [])
-  const [exchangeState, setExchangeState] = useState<ExchangeState>(
-    errorParam === 'link_expired' ? 'error' : 'pending'
-  )
+  const [exchangeState, setExchangeState] = useState<ExchangeState>(() => {
+    if (errorParam === 'link_expired' || !code) return 'error'
+    return 'pending'
+  })
   const [serverError, setServerError] = useState<string | null>(null)
-  const exchangeAttempted = useRef(false)
 
   const form = useForm<ResetPasswordFormValues>({
     defaultValues: { password: '', confirmPassword: '' },
   })
 
   useEffect(() => {
-    if (exchangeAttempted.current) return
-    exchangeAttempted.current = true
-
-    if (errorParam === 'link_expired' || !code) {
-      setExchangeState('error')
-      return
-    }
+    if (errorParam === 'link_expired' || !code) return
     // createBrowserClient auto-exchanges the code via detectSessionInUrl.
     // getSession() awaits that initialization before returning.
     supabase.auth.getSession().then(({ data: { session } }) => {
       setExchangeState(session ? 'ready' : 'error')
     })
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [code, errorParam, supabase])
 
   const onSubmit = async (values: ResetPasswordFormValues) => {
     setServerError(null)

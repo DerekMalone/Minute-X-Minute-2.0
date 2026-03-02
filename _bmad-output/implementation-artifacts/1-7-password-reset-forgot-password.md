@@ -1,6 +1,6 @@
 # Story 1.7: Password Reset (Forgot Password)
 
-Status: review
+Status: done
 
 ## Story
 
@@ -21,11 +21,10 @@ so that I can regain access to my account when I forget my password.
 
 - [x] Task 1: Create `/auth/callback` Route Handler (AC: 4, 6)
   - [x] Create `src/app/auth/callback/route.ts` as a Next.js Route Handler (GET)
-  - [x] Read `code` and `next` query params from the request URL
-  - [x] Use server Supabase client (`@/lib/supabase/server`) to call `supabase.auth.exchangeCodeForSession(code)`
-  - [x] On success: `NextResponse.redirect(origin + next)` where `next` defaults to `/reset-password`
-  - [x] On error: `NextResponse.redirect(origin + next + '?error=link_expired')`
+  - [x] Read `code` and `next` query params from the request URL; validate `next` starts with `/`
   - [x] If no `code` param: redirect to `/login`
+  - [x] Pass code through to client: `NextResponse.redirect(origin + next + '?code=' + code)` — server-side `exchangeCodeForSession` was intentionally NOT used (see Debug Log: httpOnly cookies set by server client cannot be read by `createBrowserClient`; PKCE exchange happens client-side via `detectSessionInUrl`)
+  - [x] PKCE code exchange and error detection (expired/used link) handled in `ResetPasswordForm` via `supabase.auth.getSession()`
 
 - [x] Task 2: Extend `useAuth` with password reset methods (AC: 2, 3, 5)
   - [x] Add `requestPasswordReset(email: string)` — calls `supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/auth/callback?next=/reset-password' })`, throw on error
@@ -251,14 +250,15 @@ claude-sonnet-4-6
 
 ### Completion Notes List
 
-- Task 1: Created `/auth/callback` GET route handler. Uses server Supabase client to exchange PKCE code for session. Redirects to `next` param (default `/reset-password`) on success, appends `?error=link_expired` on failure, redirects to `/login` if no code present.
-- Task 2: Extended `useAuth` with `requestPasswordReset` (calls `resetPasswordForEmail` with PKCE `redirectTo`) and `updatePassword` (calls `updateUser`, then redirects to `/login?message=...` on success). Both throw on error.
+- Task 1: Created `/auth/callback` GET route handler. Validates `next` param (must start with `/`). Passes code through to client-side for PKCE exchange via `detectSessionInUrl`. Redirects to `/login` if no code present.
+- Task 2: Extended `useAuth` with `requestPasswordReset` (calls `resetPasswordForEmail` with PKCE `redirectTo`). Note: `updatePassword` was removed in code review — `ResetPasswordForm` calls `supabase.auth.updateUser` directly to share the stable `useMemo` client instance required for PKCE.
 - Task 3: Created `ForgotPasswordForm` with inline `submitted` state swap (no page nav). Created `/forgot-password/page.tsx` with Suspense wrapper. Updated `SigninForm` with "Forgot password?" link and `message` param display.
 - Task 4: Created `ResetPasswordForm` — reads `error` param to branch between expired-link state and new-password form. Password + confirmPassword with match validation. On error shows inline link to `/forgot-password`. Created `/reset-password/page.tsx` with Suspense wrapper.
 
 ### Change Log
 
 - 2026-03-02: Story implemented. Password reset flow using PKCE client-side exchange pattern. 7 files added/modified.
+- 2026-03-02: Code review fixes (story 1.7.1): corrected Task 1 subtask descriptions; removed dead `updatePassword` from `useAuth`; fixed `useEffect` dependency suppression in `ResetPasswordForm`; added `next` param validation in route handler; allowlisted `message` param in `SigninForm`; fixed pending-state flash on direct `/reset-password` navigation.
 
 ### File List
 
