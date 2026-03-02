@@ -1,5 +1,5 @@
 ---
-stepsCompleted: [1, 2, 3]
+stepsCompleted: [1, 2, 3, 4, 5, 6]
 inputDocuments:
   - "_bmad-output/project-context.md"
   - "_bmad-output/planning-artifacts/create-brief-context.md"
@@ -224,3 +224,151 @@ MVP.
 | Core loop | Plan → practice → suggest → check | Review → attend → improve | Favorite → solo session |
 | Aha moment | First clean practice, no dead time | Shows up knowing the drills | First purposeful solo session |
 | Growth hook | Expanding library + team improvement | Habit of pre-practice prep | Drill creation wall → bring coach in |
+
+---
+
+## Success Metrics
+
+Success for minuteXminute2 is measured across three user types and two business
+horizons. Metrics are limited to what is observable within MVP feature set —
+feature-dependent metrics are captured in the roadmap.
+
+### User Success Metrics
+
+**Coach (Marcus)**
+- **Practice plans created** — adoption signal; coach is planning in the tool,
+  not in their head
+- **Plan adjustment frequency** — depth signal; edits indicate the tool is
+  embedded in real workflow, not just trialed
+- **Drill integration rate** — library health signal; % of drills in a plan
+  pulled from existing library vs. newly created. High reuse = library is
+  compounding, which is the core value prop
+
+**Team Player (Jordan)**
+- **Drill views** — player is engaging with content before and between practices
+- **Practice plan opens pre-practice** — player arrives informed, not reactive
+- **Return visit frequency** — habit formation signal
+
+**Solo Player (Alex)**
+- **Return rate to favorited drills** — structured solo sessions forming
+- **New drill saves** — player is actively building their personal drill set
+
+---
+
+### Business Objectives
+
+**3-Month Target (Early Validation)**
+- Willingness to test among real coaches (pilot cohort recruited and active)
+- Positive qualitative feedback from pilot testers — coaches report the tool
+  is improving their practice planning workflow
+
+**12-Month Target (Sustained Traction)**
+- Continued and increased usage from pilot cohort (retention signal)
+- Measurable new coach onboarding — the user base is growing beyond the
+  initial pilot group
+
+**Monetization Model (Future)**
+- Free at launch — full feature access within usage limits
+- Future paid tier: flat fee for team creation, adjusted pricing for additional
+  teams, drill storage cap, Social Hub drill pull limits, optional donations
+- Recorded session + coach remote feedback identified as a future monetization
+  angle (out of scope for MVP)
+
+---
+
+### Key Performance Indicators
+
+| KPI | Signal | Target |
+|---|---|---|
+| Practice plans created per coach | Adoption | >1 plan before first practice |
+| Plan edit frequency | Workflow depth | Regular edits per plan |
+| Drill integration rate | Library health | >50% drills from library by month 2 |
+| Practice plan opens (players) | Pre-practice prep | Opened before each practice |
+| Drill views per player | Engagement | Regular views between sessions |
+| Favorited drill return rate (Alex) | Solo habit | Return within 1 week |
+| New drill saves (Alex) | Library growth | Saves per session |
+| Pilot tester count (3mo) | Validation | Active pilot cohort established |
+| Coach retention (12mo) | Sustained value | Pilot coaches still active |
+| New coach signups (12mo) | Growth | Month-over-month increase |
+
+---
+
+## MVP Scope
+
+### Core Features
+
+1. **Authentication** — Supabase (email/password + OAuth)
+2. **Team Management** — roster, coach assignments
+3. **Drill Library** — create/edit/delete drills with category, difficulty, duration,
+   position tags
+4. **Whiteboard** — react-konva multi-slide canvas per drill; canvas data stored
+   as JSON in `drill_slides`
+5. **Practice Planner** — build practice from existing drills, time allocation per
+   drill, "available time left" display
+6. **Player Views** — read-only access to team drill library and upcoming practice
+   plan
+
+### Out of Scope for MVP
+
+- **Social Hub** — data model ready (`is_public` defaults to false, `saved_drills`
+  table in place); UI toggle and browse experience deferred to Phase 2
+- **Calendar / Schedule** — practice and game scheduling deferred to Phase 2
+  (top priority after MVP)
+- **Video embedding** — high infrastructure cost (S3, CDN, transcoding) and
+  validation complexity; Phase 2 monetization candidate (freemium: N free
+  uploads, paid for more)
+- **Practice timer / drill countdown** — deferred to Phase 2
+- **Parent Dashboard** — lightweight share link considered for Phase 2; full
+  parent hub (communications, payments, schedule) deferred to Phase 3
+- **Individual session tracking** — requires dedicated logging feature
+- **Teammate competition / leaderboards** — requires scale to be meaningful
+- **Skill tests** — out of MVP scope
+- **Recorded session + coach remote feedback** — future monetization angle
+- **Message board / team discussion** — out of MVP scope
+- **Animation playback for drill slides** — out of MVP scope
+- **Multi-sport UI** — database is sport-agnostic; UI is lacrosse-only for MVP
+
+### MVP Success Criteria
+
+- Pilot cohort of real coaches recruited and actively using the tool
+- Coaches report the core loop (plan → practice → player views) improves
+  their workflow
+- At least one practice plan built per coach before their first practice using MxM
+- Players on pilot teams opening practice plans before sessions
+- Positive qualitative feedback sufficient to justify continued development
+
+### Future Vision
+
+The foundation MxM ships with is deliberately load-bearing: the data model, role
+system, and core loop are built to absorb new capabilities without structural
+overhaul. The MVP is the practice layer; everything after it extends and connects
+that layer.
+
+**Phase 2 — Team Layer**
+- **Calendar / Schedule** *(top priority)* — coach-managed practice and game
+  scheduling; players see upcoming events; schedule changes surfaced to team
+- **Social Hub** — drill sharing; browse by coach/team; save drills directly
+  into your own library
+- **Lightweight parent access** — shareable link or read-only view for parents
+  of youth players; upcoming schedule and practice events visible without a
+  full account
+- **Video embedding** — coach-only upload per drill; freemium model
+- **Practice timer** — drill countdown and transition timing on the field
+
+**Phase 3 — Development + Analytics Layer**
+- **Performance analytics** — ground ball differential, shot-to-goal ratio,
+  turnovers; stat-identified weaknesses feed drill recommendations
+- **Full parent dashboard** — dedicated parent role with coach communications,
+  team roster, schedule management, and optional payment handling
+- **Individual session tracking** — log out-of-practice activity; track drill
+  completion
+- **Leaderboards + competition** — area/global rankings with tier system;
+  requires user scale
+- **Recorded session + coach remote feedback** — coach reviews footage and
+  sends notes; primary monetization candidate
+
+**Long-term ceiling**
+MxM becomes the single operating system for a coaching staff — practice-first
+at its core, expanding to absorb scheduling, logistics, communications, analytics,
+and player development into one platform. Multi-sport UI and Athletic Director
+visibility across programs come as user base and sport coverage grow.
