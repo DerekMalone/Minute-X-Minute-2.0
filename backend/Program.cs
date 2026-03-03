@@ -11,6 +11,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddProblemDetails();
 
+// Add services
+builder.Services.AddScoped<Backend.Services.ITeamService, Backend.Services.TeamService>();
+
 // Add DbContext with PostgreSQL
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
