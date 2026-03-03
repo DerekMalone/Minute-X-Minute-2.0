@@ -24,12 +24,30 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Drill>()
             .HasQueryFilter(d => d.DeletedAt == null);
 
+        modelBuilder.Entity<Drill>()
+            .HasOne(d => d.Team)
+            .WithMany(t => t.Drills)
+            .HasForeignKey(d => d.TeamId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         modelBuilder.Entity<Team>()
             .Property(t => t.Sport)
             .HasDefaultValue("lacrosse");
     }
 
+    public override int SaveChanges()
+    {
+        SetTimestamps();
+        return base.SaveChanges();
+    }
+
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        SetTimestamps();
+        return await base.SaveChangesAsync(cancellationToken);
+    }
+
+    private void SetTimestamps()
     {
         var now = DateTime.UtcNow;
         foreach (var entry in ChangeTracker.Entries())
@@ -38,6 +56,8 @@ public class AppDbContext : DbContext
             {
                 if (entry.Properties.Any(p => p.Metadata.Name == "CreatedAt"))
                     entry.Property("CreatedAt").CurrentValue = now;
+                if (entry.Properties.Any(p => p.Metadata.Name == "JoinedAt"))
+                    entry.Property("JoinedAt").CurrentValue = now;
                 if (entry.Properties.Any(p => p.Metadata.Name == "UpdatedAt"))
                     entry.Property("UpdatedAt").CurrentValue = now;
             }
@@ -47,6 +67,5 @@ public class AppDbContext : DbContext
                     entry.Property("UpdatedAt").CurrentValue = now;
             }
         }
-        return await base.SaveChangesAsync(cancellationToken);
     }
 }
