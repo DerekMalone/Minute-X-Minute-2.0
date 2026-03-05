@@ -1,4 +1,3 @@
-using System.Text;
 using Backend.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddProblemDetails();
+
+// Add services
+builder.Services.AddScoped<Backend.Services.ITeamService, Backend.Services.TeamService>();
 
 // Add DbContext with PostgreSQL
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -26,14 +28,15 @@ builder.Services.AddCors(options =>
 });
 
 // Add JWT authentication
+// Supabase uses ES256 (asymmetric). The middleware auto-discovers public keys from
+// the Supabase JWKS endpoint via Authority, caches them, and matches by kid.
+// SUPABASE_JWT_SECRET is not used for ES256 — asymmetric public key validation only.
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        options.Authority = builder.Configuration["SUPABASE_URL"] + "/auth/v1";
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["SUPABASE_JWT_SECRET"]!)),
             ValidateIssuer = false,
             ValidateAudience = false,
             ClockSkew = TimeSpan.Zero
