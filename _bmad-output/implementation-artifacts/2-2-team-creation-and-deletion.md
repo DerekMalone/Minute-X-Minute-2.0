@@ -527,6 +527,7 @@ claude-sonnet-4-6
 - Pre-implementation code review: 8 spec issues fixed (3 HIGH, 5 MEDIUM) before any code was written.
 - `vi.mock` inside test body is hoisted in Vitest — use `mockReturnValue` per test to control hook return values, not nested `vi.mock` calls.
 - Backend tests require explicit `using Xunit;` — `ImplicitUsings` does not include xunit namespaces.
+- Supabase uses ES256 (asymmetric) signing — `SUPABASE_JWT_SECRET` cannot validate ES256 tokens. Fix: use `options.Authority = SUPABASE_URL + "/auth/v1"` in `AddJwtBearer`. The middleware auto-fetches EC public keys from the Supabase JWKS endpoint, caches them, and matches by `kid`. Requires `SUPABASE_URL` in `docker-compose.yml` + `.env`. `SUPABASE_JWT_SECRET` is no longer used for JWT validation. Apply to ALL future .NET projects using Supabase JWT auth.
 
 ### File List
 
