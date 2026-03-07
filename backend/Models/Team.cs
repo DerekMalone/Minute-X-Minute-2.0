@@ -11,4 +11,5 @@ public class Team
 
     public ICollection<TeamMember> TeamMembers { get; set; } = [];
     public ICollection<Drill> Drills { get; set; } = [];
+    public ICollection<Invite> Invites { get; set; } = [];
 }

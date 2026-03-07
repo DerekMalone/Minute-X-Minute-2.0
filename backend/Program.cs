@@ -12,6 +12,7 @@ builder.Services.AddProblemDetails();
 
 // Add services
 builder.Services.AddScoped<Backend.Services.ITeamService, Backend.Services.TeamService>();
+builder.Services.AddScoped<Backend.Services.IInviteService, Backend.Services.InviteService>();
 
 // Add DbContext with PostgreSQL
 builder.Services.AddDbContext<AppDbContext>(options =>

@@ -12,6 +12,7 @@ public class AppDbContext : DbContext
     public DbSet<Team> Teams { get; set; } = null!;
     public DbSet<TeamMember> TeamMembers { get; set; } = null!;
     public DbSet<Drill> Drills { get; set; } = null!;
+    public DbSet<Invite> Invites { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -33,6 +34,16 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Team>()
             .Property(t => t.Sport)
             .HasDefaultValue("lacrosse");
+
+        modelBuilder.Entity<Invite>()
+            .HasOne(i => i.Team)
+            .WithMany(t => t.Invites)
+            .HasForeignKey(i => i.TeamId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Invite>()
+            .HasIndex(i => i.Token)
+            .IsUnique();
     }
 
     public override int SaveChanges()

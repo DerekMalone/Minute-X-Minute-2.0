@@ -73,6 +73,11 @@ public class TeamService : BaseService, ITeamService
         if (!isHeadCoach)
             throw new UnauthorizedAccessException("Only the head coach can delete a team.");
 
+        var invites = await _context.Invites
+            .Where(i => i.TeamId == teamId)
+            .ToListAsync(ct);
+        _context.Invites.RemoveRange(invites);
+
         var drills = await _context.Drills
             .IgnoreQueryFilters()
             .Where(d => d.TeamId == teamId)

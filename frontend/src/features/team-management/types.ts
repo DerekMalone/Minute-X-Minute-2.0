@@ -5,3 +5,10 @@ export interface TeamDto {
   role: string
   createdAt: string
 }
+
+export interface InviteDto {
+  id: string
+  token: string
+  expiresAt: string
+  createdAt: string
+}
