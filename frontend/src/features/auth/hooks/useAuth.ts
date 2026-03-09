@@ -6,10 +6,10 @@ export function useAuth() {
   const router = useRouter()
   const supabase = createClient()
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, returnTo?: string) => {
     const { data, error } = await supabase.auth.signUp({ email, password })
     if (error) throw error
-    if (data.session) router.push('/coach/dashboard')
+    if (data.session) router.push(returnTo || '/coach/dashboard')
     return data
   }
 

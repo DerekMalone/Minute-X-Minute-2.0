@@ -3,6 +3,8 @@ backend/bin/
 backend/obj/
 backend/*.user
 backend/*.suo
+backend.Tests/bin/
+backend.Tests/obj/
 
 # Next.js
 frontend/node_modules/

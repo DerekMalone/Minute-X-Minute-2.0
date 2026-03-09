@@ -51,4 +51,38 @@ public class InvitesController : ControllerBase
             return Forbid();
         }
     }
+
+    [HttpGet("validate")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ValidateInvite([FromQuery] string token, CancellationToken ct)
+    {
+        if (string.IsNullOrEmpty(token)) return BadRequest();
+
+        try
+        {
+            var dto = await _inviteService.ValidateInviteAsync(token, ct);
+            return Ok(dto);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+    }
+
+    [HttpPost("redeem")]
+    public async Task<IActionResult> RedeemInvite([FromBody] RedeemInviteRequest request, CancellationToken ct)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        if (userId == null) return Unauthorized();
+
+        try
+        {
+            var teamId = await _inviteService.RedeemInviteAsync(userId, request.Token, ct);
+            return Ok(new { teamId });
+        }
+        catch (InvalidOperationException)
+        {
+            return Conflict("Invite is no longer valid.");
+        }
+    }
 }

@@ -29,6 +29,51 @@ public class InviteService : BaseService, IInviteService
         };
     }
 
+    public async Task<ValidateInviteDto> ValidateInviteAsync(string token, CancellationToken ct = default)
+    {
+        var invite = await _context.Invites
+            .Include(i => i.Team)
+            .Where(i => i.Token == token && i.RevokedAt == null && i.ExpiresAt > DateTime.UtcNow)
+            .FirstOrDefaultAsync(ct);
+
+        if (invite == null)
+            throw new KeyNotFoundException("Invite not found or expired.");
+
+        return new ValidateInviteDto
+        {
+            TeamId = invite.TeamId,
+            TeamName = invite.Team.Name
+        };
+    }
+
+    public async Task<Guid> RedeemInviteAsync(string userId, string token, CancellationToken ct = default)
+    {
+        var invite = await _context.Invites
+            .Where(i => i.Token == token && i.RevokedAt == null && i.ExpiresAt > DateTime.UtcNow)
+            .FirstOrDefaultAsync(ct);
+
+        if (invite == null)
+            throw new InvalidOperationException("Invite is invalid or has expired.");
+
+        var alreadyMember = await _context.TeamMembers
+            .AnyAsync(tm => tm.UserId == userId && tm.TeamId == invite.TeamId, ct);
+
+        if (alreadyMember)
+            return invite.TeamId;
+
+        _context.TeamMembers.Add(new TeamMember
+        {
+            Id = Guid.NewGuid(),
+            TeamId = invite.TeamId,
+            UserId = userId,
+            Role = MemberRole.Player
+        });
+
+        await _context.SaveChangesAsync(ct);
+
+        return invite.TeamId;
+    }
+
     public async Task<InviteDto> GenerateInviteAsync(string userId, Guid teamId, CancellationToken ct = default)
     {
         await ValidateTeamAccess(userId, teamId, ct);

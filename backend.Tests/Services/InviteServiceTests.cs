@@ -172,4 +172,185 @@ public class InviteServiceTests
         Assert.NotNull(result);
         Assert.Equal("activetoken", result.Token);
     }
+
+    // --- ValidateInviteAsync tests ---
+
+    [Fact]
+    public async Task ValidateInviteAsync_ReturnsDto_WhenTokenValid()
+    {
+        using var ctx = CreateContext(nameof(ValidateInviteAsync_ReturnsDto_WhenTokenValid));
+        var svc = new InviteService(ctx);
+        var (team, _) = await SeedTeamWithHeadCoach(ctx);
+
+        ctx.Invites.Add(new Invite
+        {
+            Id = Guid.NewGuid(),
+            TeamId = team.Id,
+            Token = "validtoken",
+            ExpiresAt = DateTime.UtcNow.AddDays(7),
+            CreatedBy = "coach-1"
+        });
+        await ctx.SaveChangesAsync();
+
+        var result = await svc.ValidateInviteAsync("validtoken");
+
+        Assert.Equal(team.Id, result.TeamId);
+        Assert.Equal("Test Team", result.TeamName);
+    }
+
+    [Fact]
+    public async Task ValidateInviteAsync_ThrowsKeyNotFound_WhenTokenExpired()
+    {
+        using var ctx = CreateContext(nameof(ValidateInviteAsync_ThrowsKeyNotFound_WhenTokenExpired));
+        var svc = new InviteService(ctx);
+        var (team, _) = await SeedTeamWithHeadCoach(ctx);
+
+        ctx.Invites.Add(new Invite
+        {
+            Id = Guid.NewGuid(),
+            TeamId = team.Id,
+            Token = "expiredtoken",
+            ExpiresAt = DateTime.UtcNow.AddDays(-1),
+            CreatedBy = "coach-1"
+        });
+        await ctx.SaveChangesAsync();
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            svc.ValidateInviteAsync("expiredtoken"));
+    }
+
+    [Fact]
+    public async Task ValidateInviteAsync_ThrowsKeyNotFound_WhenTokenRevoked()
+    {
+        using var ctx = CreateContext(nameof(ValidateInviteAsync_ThrowsKeyNotFound_WhenTokenRevoked));
+        var svc = new InviteService(ctx);
+        var (team, _) = await SeedTeamWithHeadCoach(ctx);
+
+        ctx.Invites.Add(new Invite
+        {
+            Id = Guid.NewGuid(),
+            TeamId = team.Id,
+            Token = "revokedtoken",
+            ExpiresAt = DateTime.UtcNow.AddDays(7),
+            RevokedAt = DateTime.UtcNow,
+            CreatedBy = "coach-1"
+        });
+        await ctx.SaveChangesAsync();
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            svc.ValidateInviteAsync("revokedtoken"));
+    }
+
+    [Fact]
+    public async Task ValidateInviteAsync_ThrowsKeyNotFound_WhenTokenNotFound()
+    {
+        using var ctx = CreateContext(nameof(ValidateInviteAsync_ThrowsKeyNotFound_WhenTokenNotFound));
+        var svc = new InviteService(ctx);
+        await SeedTeamWithHeadCoach(ctx);
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            svc.ValidateInviteAsync("doesnotexist"));
+    }
+
+    // --- RedeemInviteAsync tests ---
+
+    [Fact]
+    public async Task RedeemInviteAsync_AddsPlayerMembership_WhenValidToken()
+    {
+        using var ctx = CreateContext(nameof(RedeemInviteAsync_AddsPlayerMembership_WhenValidToken));
+        var svc = new InviteService(ctx);
+        var (team, _) = await SeedTeamWithHeadCoach(ctx);
+
+        ctx.Invites.Add(new Invite
+        {
+            Id = Guid.NewGuid(),
+            TeamId = team.Id,
+            Token = "validtoken",
+            ExpiresAt = DateTime.UtcNow.AddDays(7),
+            CreatedBy = "coach-1"
+        });
+        await ctx.SaveChangesAsync();
+
+        var result = await svc.RedeemInviteAsync("player-1", "validtoken");
+
+        Assert.Equal(team.Id, result);
+        var member = await ctx.TeamMembers
+            .FirstOrDefaultAsync(tm => tm.UserId == "player-1" && tm.TeamId == team.Id);
+        Assert.NotNull(member);
+        Assert.Equal(MemberRole.Player, member.Role);
+    }
+
+    [Fact]
+    public async Task RedeemInviteAsync_IsIdempotent_WhenAlreadyMember()
+    {
+        using var ctx = CreateContext(nameof(RedeemInviteAsync_IsIdempotent_WhenAlreadyMember));
+        var svc = new InviteService(ctx);
+        var (team, _) = await SeedTeamWithHeadCoach(ctx);
+
+        ctx.Invites.Add(new Invite
+        {
+            Id = Guid.NewGuid(),
+            TeamId = team.Id,
+            Token = "validtoken",
+            ExpiresAt = DateTime.UtcNow.AddDays(7),
+            CreatedBy = "coach-1"
+        });
+        ctx.TeamMembers.Add(new TeamMember
+        {
+            Id = Guid.NewGuid(),
+            TeamId = team.Id,
+            UserId = "player-1",
+            Role = MemberRole.Player
+        });
+        await ctx.SaveChangesAsync();
+
+        var result = await svc.RedeemInviteAsync("player-1", "validtoken");
+
+        Assert.Equal(team.Id, result);
+        var memberCount = await ctx.TeamMembers.CountAsync(tm => tm.UserId == "player-1" && tm.TeamId == team.Id);
+        Assert.Equal(1, memberCount);
+    }
+
+    [Fact]
+    public async Task RedeemInviteAsync_ThrowsInvalidOp_WhenTokenExpired()
+    {
+        using var ctx = CreateContext(nameof(RedeemInviteAsync_ThrowsInvalidOp_WhenTokenExpired));
+        var svc = new InviteService(ctx);
+        var (team, _) = await SeedTeamWithHeadCoach(ctx);
+
+        ctx.Invites.Add(new Invite
+        {
+            Id = Guid.NewGuid(),
+            TeamId = team.Id,
+            Token = "expiredtoken",
+            ExpiresAt = DateTime.UtcNow.AddDays(-1),
+            CreatedBy = "coach-1"
+        });
+        await ctx.SaveChangesAsync();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            svc.RedeemInviteAsync("player-1", "expiredtoken"));
+    }
+
+    [Fact]
+    public async Task RedeemInviteAsync_ThrowsInvalidOp_WhenTokenRevoked()
+    {
+        using var ctx = CreateContext(nameof(RedeemInviteAsync_ThrowsInvalidOp_WhenTokenRevoked));
+        var svc = new InviteService(ctx);
+        var (team, _) = await SeedTeamWithHeadCoach(ctx);
+
+        ctx.Invites.Add(new Invite
+        {
+            Id = Guid.NewGuid(),
+            TeamId = team.Id,
+            Token = "revokedtoken",
+            ExpiresAt = DateTime.UtcNow.AddDays(7),
+            RevokedAt = DateTime.UtcNow,
+            CreatedBy = "coach-1"
+        });
+        await ctx.SaveChangesAsync();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            svc.RedeemInviteAsync("player-1", "revokedtoken"));
+    }
 }

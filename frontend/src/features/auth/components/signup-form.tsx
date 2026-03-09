@@ -1,7 +1,9 @@
 'use client'
+import { Suspense } from 'react'
 import { useForm } from 'react-hook-form'
 import Image from 'next/image'
 import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -9,9 +11,11 @@ import { AgeGateCheckbox } from '@/features/auth/components/age-gate-checkbox'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import type { SignupFormValues } from '@/features/auth/types'
 
-export function SignupForm() {
+function SignupFormInner() {
   const { signUp } = useAuth()
   const [serverError, setServerError] = useState<string | null>(null)
+  const searchParams = useSearchParams()
+  const returnTo = searchParams.get('returnTo') ?? undefined
 
   const form = useForm<SignupFormValues>({
     defaultValues: { email: '', password: '', ageGate: false },
@@ -20,7 +24,7 @@ export function SignupForm() {
   const onSubmit = async (values: SignupFormValues) => {
     setServerError(null)
     try {
-      await signUp(values.email, values.password)
+      await signUp(values.email, values.password, returnTo)
     } catch (error: unknown) {
       if (error instanceof Error && error.message === 'User already registered') {
         form.setError('email', { message: 'Email already in use. Try signing in.' })
@@ -115,5 +119,13 @@ export function SignupForm() {
         </Form>
       </div>
     </div>
+  )
+}
+
+export function SignupForm() {
+  return (
+    <Suspense>
+      <SignupFormInner />
+    </Suspense>
   )
 }

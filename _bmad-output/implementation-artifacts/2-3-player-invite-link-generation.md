@@ -1,6 +1,6 @@
 # Story 2.3: Player Invite Link Generation
 
-Status: review
+Status: done
 
 ## Story
 
