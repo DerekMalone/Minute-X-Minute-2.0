@@ -55,8 +55,8 @@ development_status:
   epic-2: in-progress
   2-1-backend-foundation-validateteamaccess-and-soft-delete-filter: done
   2-2-team-creation-and-deletion: done
-  2-3-player-invite-link-generation: review
-  2-4-player-joins-team-via-invite-link: backlog
+  2-3-player-invite-link-generation: done
+  2-4-player-joins-team-via-invite-link: done
   2-5-roster-management: backlog
   2-6-player-position-tag-assignment: backlog
   epic-2-retrospective: optional
