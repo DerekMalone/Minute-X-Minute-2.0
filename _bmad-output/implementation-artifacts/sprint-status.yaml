@@ -40,6 +40,24 @@ tracking_system: file-system
 story_location: _bmad-output/implementation-artifacts
 
 development_status:
+  # ══════════════════════════════════════════════════════════════════════════
+  # BETA PILOT PRIORITY ORDER — work these next, in sequence, one per session
+  #
+  #   SESSION 1: /bmad-bmm-create-story → /bmad-bmm-dev-story  (target: 3-1)
+  #   SESSION 2: /bmad-bmm-create-story → /bmad-bmm-dev-story  (target: 5-1)
+  #   SESSION 3: /bmad-bmm-create-story → /bmad-bmm-dev-story  (target: 5-2)
+  #   SESSION 4: /bmad-bmm-dev-story only — story file already exists (infra-1)
+  #
+  # ══════════════════════════════════════════════════════════════════════════
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # INFRA DEPENDENCY — Cloud Hosting Migration (SESSION 4)
+  # infra-1-cloud-hosting-migration: must be completed before beta deployment.
+  # Any story that introduces a new backend or frontend environment variable
+  # must document it in that story's dev notes so Railway/Vercel stay in sync.
+  # ──────────────────────────────────────────────────────────────────────────
+  infra-1-cloud-hosting-migration: ready-for-dev
+
   # Epic 1: Foundation & Authenticated Onboarding
   epic-1: in-progress
   1-1-email-password-account-registration: done
@@ -51,27 +69,27 @@ development_status:
   1-7-password-reset-forgot-password: done
   epic-1-retrospective: optional
 
-  # Epic 2: Team & Player Onboarding
+  # Epic 2: Team & Player Onboarding — DEFERRED (resume after beta pilot)
   epic-2: in-progress
   2-1-backend-foundation-validateteamaccess-and-soft-delete-filter: done
   2-2-team-creation-and-deletion: done
   2-3-player-invite-link-generation: done
   2-4-player-joins-team-via-invite-link: done
-  2-5-roster-management: backlog
-  2-6-player-position-tag-assignment: backlog
+  2-5-roster-management: ready-for-dev  # deferred — parked for beta pilot
+  2-6-player-position-tag-assignment: backlog  # deferred — parked for beta pilot
   epic-2-retrospective: optional
 
   # Epic 3: Drill Library
-  epic-3: backlog
-  3-1-create-a-drill: backlog
-  3-2-edit-a-drill: backlog
-  3-3-delete-a-drill: backlog
-  3-4-view-drill-library-with-filtering: backlog
-  3-5-search-drill-library: backlog
-  3-6-pre-loaded-template-drills-for-coach-cold-start: backlog
+  epic-3: in-progress
+  3-1-create-a-drill: ready-for-dev  # ← SESSION 1 TARGET
+  3-2-edit-a-drill: backlog  # deferred
+  3-3-delete-a-drill: backlog  # deferred
+  3-4-view-drill-library-with-filtering: backlog  # deferred
+  3-5-search-drill-library: backlog  # deferred
+  3-6-pre-loaded-template-drills-for-coach-cold-start: backlog  # deferred — not needed for beta
   epic-3-retrospective: optional
 
-  # Epic 4: Whiteboard & Canvas
+  # Epic 4: Whiteboard & Canvas — DEFERRED (entirely, post-beta)
   epic-4: backlog
   4-1-canvas-code-split-boundary: backlog
   4-2-add-a-whiteboard-canvas-to-a-drill: backlog
@@ -83,10 +101,10 @@ development_status:
 
   # Epic 5: Practice Planning
   epic-5: backlog
-  5-1-create-a-practice-plan: backlog
-  5-2-add-drills-to-a-plan-with-live-time-counter: backlog
-  5-3-set-per-drill-time-allocation: backlog
-  5-4-reorder-drills-in-a-plan: backlog
+  5-1-create-a-practice-plan: backlog  # ← SESSION 2 TARGET
+  5-2-add-drills-to-a-plan-with-live-time-counter: backlog  # ← SESSION 3 TARGET (descope live timer if needed)
+  5-3-set-per-drill-time-allocation: backlog  # deferred
+  5-4-reorder-drills-in-a-plan: backlog  # deferred
   5-5-edit-and-delete-a-practice-plan: backlog
   5-6-designate-active-plan-and-hide-drills-from-players: backlog
   5-7-practice-plans-list-view: backlog
