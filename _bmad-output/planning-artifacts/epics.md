@@ -248,6 +248,10 @@ Players have a complete read-only experience: view the team's active practice pl
 Head coaches can invite assistant coaches by email and remove them. Invited assistant coaches can accept the invite and join with full drill creation/editing rights and practice plan editing access. Head coach retains exclusive authority to create, configure, and delete the team. All role-scoped permissions enforced server-side.
 **FRs covered:** FR7, FR8, FR9, FR10, FR22, FR35
 
+### Epic 8: Deployment Readiness & Cloud Infrastructure
+**Begins after Story 3.1 is done. Must be completed before Story 5.1.** The application is production-ready and deployed to Vercel (frontend) and Google Cloud Run (backend). All environment-specific configuration is externalized to environment variables and Cloud Run Secret Manager. No hardcoded URLs or credentials exist in the codebase. The backend Docker image builds and runs independently of Docker Compose.
+**FRs covered:** No new FRs — cross-cutting production readiness prerequisite for beta launch.
+
 ---
 
 **Definition of Done (all epics):**
@@ -756,6 +760,154 @@ So that I can experience the full product loop immediately without building my l
 **Given** I delete a template drill
 **When** the deletion is confirmed
 **Then** it is soft-deleted like any other drill — templates carry no special protection after the initial load
+
+---
+
+## Epic 8: Deployment Readiness & Cloud Infrastructure
+
+> **Sequencing:** Begin this epic only after Story 3.1 (Create a Drill) is marked `done`. Epic 8 must be fully completed before starting Story 5.1 (Create a Practice Plan). This is the beta launch gate.
+
+The application is production-ready and deployed to Vercel (frontend) and Google Cloud Run (backend). All environment-specific configuration is externalized. No hardcoded URLs or credentials remain. Backend Docker image builds and runs independently of Docker Compose.
+
+### Story 8.1: CORS Origins Environment-Variable Driven
+
+As a DevOps engineer,
+I want the backend CORS allowed origins read from an environment variable,
+So that the API accepts requests from the Vercel production domain without a code change.
+
+**Acceptance Criteria:**
+
+**Given** the `ALLOWED_ORIGINS` environment variable is set to the Vercel domain
+**When** a preflight or credentialed request arrives with a matching `Origin` header
+**Then** the response includes the correct `Access-Control-Allow-Origin` header and the request is not rejected
+
+**Given** `ALLOWED_ORIGINS` is not set
+**When** the application starts
+**Then** it falls back to `http://localhost:3000,http://localhost:4200` so local development is unaffected
+
+**Given** the Cloud Run service has `ALLOWED_ORIGINS` set to the Vercel production URL
+**When** the Vercel frontend makes any API call
+**Then** CORS does not block the response end-to-end
+
+---
+
+### Story 8.2: Cloud Run PORT Environment Variable Support
+
+As a DevOps engineer,
+I want the backend to bind to the port provided by Cloud Run's `PORT` environment variable,
+So that the container starts correctly on Cloud Run without hardcoded port assumptions.
+
+**Acceptance Criteria:**
+
+**Given** Cloud Run injects `PORT=8080` at container start
+**When** the container starts
+**Then** `ASPNETCORE_URLS` resolves to `http://+:8080` and the app binds successfully
+
+**Given** no `PORT` env var is present (local dev via Docker Compose)
+**When** the container starts
+**Then** the app falls back to port 8080 (the existing Compose-injected value)
+
+**Given** the running Cloud Run instance
+**When** the Cloud Run health check pings the service
+**Then** the health endpoint returns HTTP 200
+
+---
+
+### Story 8.3: Backend .dockerignore
+
+As a developer,
+I want a `.dockerignore` file in the `backend/` directory,
+So that `bin/`, `obj/`, and local env files are excluded from the Docker build context — preventing secret leakage and reducing build time.
+
+**Acceptance Criteria:**
+
+**Given** `.dockerignore` includes `bin/`, `obj/`, `.env*`, and `*.user`
+**When** `docker build -t my-backend ./backend` runs
+**Then** those paths are not included in the build context (verified via `--progress=plain` output)
+
+**Given** the image is built and the final layer is inspected
+**When** the container filesystem is examined
+**Then** no `.env` files are present inside the image
+
+---
+
+### Story 8.4: Frontend Dockerfile
+
+As a developer,
+I want a valid `Dockerfile` in the `frontend/` directory,
+So that `docker-compose up --build` completes without errors during pre-PR testing.
+
+**Acceptance Criteria:**
+
+**Given** `frontend/Dockerfile` exists and references the correct Next.js build output
+**When** `docker-compose up --build` runs
+**Then** all three services (postgres, backend, frontend) start successfully with no build errors
+
+**Given** the frontend container is running
+**When** I visit `http://localhost:4200`
+**Then** the Next.js app loads and renders correctly
+
+---
+
+### Story 8.5: Secrets Migration to Cloud Run Secret Manager
+
+As a DevOps engineer,
+I want `ConnectionStrings__DefaultConnection` and `SUPABASE_JWT_SECRET` stored in Google Cloud Secret Manager,
+So that production credentials are never stored as plain-text environment variables in the Cloud Run service definition.
+
+**Acceptance Criteria:**
+
+**Given** secrets are created in Secret Manager and the Cloud Run service account has `secretmanager.secretAccessor` role
+**When** the Cloud Run service is configured
+**Then** both secrets are mounted as environment variables via Secret Manager references — not plain text in the service definition
+
+**Given** the service starts with mounted secrets
+**When** the backend processes an authenticated request requiring a database query
+**Then** the request completes successfully — confirming Secret Manager values are accessible at runtime
+
+---
+
+### Story 8.6: Google Cloud Run Deployment
+
+As a developer,
+I want the backend deployed to Google Cloud Run,
+So that it is publicly accessible and the Vercel frontend can make authenticated API calls to it.
+
+**Acceptance Criteria:**
+
+**Given** the Docker image is built and pushed to Google Artifact Registry
+**When** the Cloud Run service is created or updated
+**Then** the service starts, passes its health check, and the `/api/health` endpoint returns HTTP 200
+
+**Given** the Cloud Run service URL is configured as the API rewrite target in `next.config.ts`
+**When** the Vercel frontend makes a `POST /api/auth` request
+**Then** the request proxies correctly, JWT is validated, and a successful response is returned (CORS + auth working end-to-end)
+
+**Given** Cloud Run auto-scaling is configured
+**When** there are zero active requests
+**Then** the service scales to zero — no idle cost
+
+---
+
+### Story 8.7: Vercel Deployment
+
+As a developer,
+I want the frontend deployed to Vercel,
+So that the app is publicly accessible from a production URL with automatic deploys on push to `main`.
+
+**Acceptance Criteria:**
+
+**Given** the GitHub repo is connected to a Vercel project
+**When** a commit is pushed to `main`
+**Then** Vercel automatically builds and deploys the Next.js app — no manual steps required
+
+**Given** the Vercel project has `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` set
+**When** the deployed app loads in a browser
+**Then** Supabase auth (sign-up, sign-in, sign-out) functions correctly in production
+
+**Given** the `NEXT_PUBLIC_API_URL` (or equivalent rewrite config) points to the Cloud Run service URL
+**When** an authenticated user performs any coach action (create team, create drill, etc.)
+**Then** the request reaches the Cloud Run backend and returns the expected response
 
 ---
 
