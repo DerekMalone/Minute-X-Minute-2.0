@@ -1,6 +1,6 @@
 # Story 3.1: Create a Drill
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -423,6 +423,37 @@ claude-sonnet-4-6
 
 ### Debug Log References
 
+None.
+
 ### Completion Notes List
 
+- Implemented full backend: Drill model expanded, DTOs, IDrillService/DrillService, DrillsController, EF migration `AddDrillMetadataFields` applied
+- 9 backend xUnit tests — all passing (33 total)
+- Implemented full frontend: types, useDrills/useCreateDrill hooks, CreateDrillForm, DrillDetailPage, DrillCard, DrillList, updated drills page
+- 5 frontend Vitest tests — all passing (23 total)
+- Decided against barrel export (index.ts) — direct imports preferred
+- `new/page.tsx` implemented as `'use client'` directly — no thin server wrapper needed since no server-side work on that route
+- Migrations run locally via .NET SDK against Docker Postgres (container uses runtime-only image, not SDK)
+
 ### File List
+
+- `backend/Models/Drill.cs` — modified
+- `backend/DTOs/Drills/DrillDto.cs` — new
+- `backend/DTOs/Drills/CreateDrillRequest.cs` — new
+- `backend/Services/IDrillService.cs` — new
+- `backend/Services/DrillService.cs` — new
+- `backend/Controllers/DrillsController.cs` — new
+- `backend/Program.cs` — modified
+- `backend/Migrations/` — new migration `AddDrillMetadataFields`
+- `backend.Tests/Services/DrillServiceTests.cs` — new
+- `frontend/src/features/drill-library/types.ts` — new
+- `frontend/src/features/drill-library/hooks/useDrills.ts` — new
+- `frontend/src/features/drill-library/hooks/useCreateDrill.ts` — new
+- `frontend/src/features/drill-library/components/create-drill-form.tsx` — new
+- `frontend/src/features/drill-library/components/create-drill-form.test.tsx` — new
+- `frontend/src/features/drill-library/components/drill-detail-page.tsx` — new
+- `frontend/src/features/drill-library/components/drill-card.tsx` — new
+- `frontend/src/features/drill-library/components/drill-list.tsx` — new
+- `frontend/src/app/(coach)/coach/drills/page.tsx` — modified
+- `frontend/src/app/(coach)/coach/drills/new/page.tsx` — new
+- `frontend/src/app/(coach)/coach/drills/[id]/page.tsx` — new
