@@ -1109,6 +1109,21 @@ So that I have a time-budgeted container to build my session around.
 **When** the field is confirmed
 **Then** validation shows "Practice duration is required" and the plan is not created
 
+### Carry-over Pre-tasks (from Story 3.1 Code Review)
+
+Resolve these before or alongside Story 5.1 implementation. All ACs in 3.1 are met — these are quality/architecture improvements deferred by design.
+
+- [ ] [AI-Review][HIGH] Fix `DrillDetailPage` infinite loading when coach has no team — `myTeam === null` leaves `useDrills(undefined)` permanently disabled (`isPending: true` forever); add null check and show "Create a team first" fallback [`drill-detail-page.tsx:11-17`]
+- [ ] [AI-Review][HIGH] Add `[MaxLength(100)]` to `Drill.Category` and `[MaxLength(50)]` to `Drill.Difficulty` in the model; run a new migration to alter those columns from `text` to `varchar` — DB currently enforces no length constraint [`backend/Models/Drill.cs`]
+- [ ] [AI-Review][MEDIUM] Extract drill library logic into a `DrillLibraryPage` component in `features/drill-library/components/` — `drills/page.tsx` should be a thin server-component wrapper per architecture patterns [`drills/page.tsx`]
+- [ ] [AI-Review][MEDIUM] Convert `new/page.tsx` to a server component wrapper that renders `<CreateDrillForm>` as a client component [`new/page.tsx`]
+- [ ] [AI-Review][MEDIUM] Add allowed-values validation for `category` and `difficulty` on the backend, or explicitly accept free-text and remove the frontend enum types — currently mismatched [`CreateDrillRequest.cs`]
+- [ ] [AI-Review][MEDIUM] Add missing test for mutation error state in `create-drill-form.test.tsx` — assert "Failed to save drill. Try again." is shown and `router.push` is NOT called on failure [`create-drill-form.test.tsx`]
+- [ ] [UX-Request] Add an explicit "Save" button to `CreateDrillForm` alongside blur/Enter trigger — no visible save affordance currently [`create-drill-form.tsx`]
+- [ ] [AI-Review][LOW] Add `cursor-pointer` and hover bg styles to `DrillCard` — no visual signal the card is clickable [`drill-card.tsx`]
+- [ ] [AI-Review][LOW] Trim `Category`, `Difficulty`, `Description` in `DrillService.CreateDrillAsync` — only `Name` is currently trimmed [`DrillService.cs:28-31`]
+- [ ] [AI-Review][LOW] Add `GET /api/drills/{id}` endpoint — `DrillDetailPage` currently fetches the full drill list to find one drill [`DrillDetailPage`, `DrillsController.cs`]
+
 ---
 
 ### Story 5.2: Add Drills to a Plan with Live Time Counter

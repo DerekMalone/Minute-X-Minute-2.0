@@ -20,57 +20,57 @@ So that I can build my library progressively without being blocked by required f
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Backend — Expand Drill model (AC: 1, 2)
-  - [ ] Expand `backend/Models/Drill.cs` to add all optional fields: `Description` (string?), `Category` (string?), `Difficulty` (string?), `DurationMinutes` (int?), `PositionTags` (string[] stored as JSON/text[])
-  - [ ] Keep `Name` as `required string` — it is the only non-nullable user-supplied field
-  - [ ] **DO NOT** change `DeletedAt`, `CreatedAt`, `UpdatedAt` — already present and managed by `SetTimestamps()`
+- [x] Task 1: Backend — Expand Drill model (AC: 1, 2)
+  - [x] \1xpand `backend/Models/Drill.cs` to add all optional fields: `Description` (string?), `Category` (string?), `Difficulty` (string?), `DurationMinutes` (int?), `PositionTags` (string[] stored as JSON/text[])
+  - [x] \1eep `Name` as `required string` — it is the only non-nullable user-supplied field
+  - [x] \1*DO NOT** change `DeletedAt`, `CreatedAt`, `UpdatedAt` — already present and managed by `SetTimestamps()`
 
-- [ ] Task 2: Backend — DTOs (AC: 1, 2, 3)
-  - [ ] Create `backend/DTOs/Drills/DrillDto.cs` — response shape: `Id` (Guid), `TeamId` (Guid), `Name` (string), `Description` (string?), `Category` (string?), `Difficulty` (string?), `DurationMinutes` (int?), `PositionTags` (string[]), `CreatedAt` (DateTime), `UpdatedAt` (DateTime)
-  - [ ] Create `backend/DTOs/Drills/CreateDrillRequest.cs` — `Name` (string, `[Required]`, `[MaxLength(200)]`), `Description` (string?, `[MaxLength(2000)]`), `Category` (string?, `[MaxLength(100)]`), `Difficulty` (string?, `[MaxLength(50)]`), `DurationMinutes` (int?, `[Range(1, 480)]`), `PositionTags` (string[]?, default empty array)
+- [x] Task 2: Backend — DTOs (AC: 1, 2, 3)
+  - [x] \1reate `backend/DTOs/Drills/DrillDto.cs` — response shape: `Id` (Guid), `TeamId` (Guid), `Name` (string), `Description` (string?), `Category` (string?), `Difficulty` (string?), `DurationMinutes` (int?), `PositionTags` (string[]), `CreatedAt` (DateTime), `UpdatedAt` (DateTime)
+  - [x] \1reate `backend/DTOs/Drills/CreateDrillRequest.cs` — `Name` (string, `[Required]`, `[MaxLength(200)]`), `Description` (string?, `[MaxLength(2000)]`), `Category` (string?, `[MaxLength(100)]`), `Difficulty` (string?, `[MaxLength(50)]`), `DurationMinutes` (int?, `[Range(1, 480)]`), `PositionTags` (string[]?, default empty array)
 
-- [ ] Task 3: Backend — IDrillService + DrillService (AC: 1, 2, 3)
-  - [ ] **Write tests FIRST (red) in Task 5 before implementing these methods**
-  - [ ] Create `backend/Services/IDrillService.cs`:
+- [x] Task 3: Backend — IDrillService + DrillService (AC: 1, 2, 3)
+  - [x] \1*Write tests FIRST (red) in Task 5 before implementing these methods**
+  - [x] \1reate `backend/Services/IDrillService.cs`:
     - `CreateDrillAsync(string userId, Guid teamId, CreateDrillRequest request, CancellationToken ct) → Task<DrillDto>`
     - `GetDrillsByTeamAsync(string userId, Guid teamId, CancellationToken ct) → Task<IReadOnlyList<DrillDto>>`
-  - [ ] Create `backend/Services/DrillService.cs` — extends `BaseService`:
+  - [x] \1reate `backend/Services/DrillService.cs` — extends `BaseService`:
     - `CreateDrillAsync`: call `ValidateTeamAccess(userId, teamId, ct)` first; trim `Name`; throw `ArgumentException("Drill name is required.")` if empty after trim; create `Drill` entity; `SaveChangesAsync`; return `DrillDto`
     - `GetDrillsByTeamAsync`: call `ValidateTeamAccess(userId, teamId, ct)` first; query `_context.Drills.Where(d => d.TeamId == teamId).OrderByDescending(d => d.CreatedAt)`; project to `DrillDto`
-  - [ ] Register `DrillService` in `Program.cs`: `builder.Services.AddScoped<IDrillService, DrillService>()`
+  - [x] \1egister `DrillService` in `Program.cs`: `builder.Services.AddScoped<IDrillService, DrillService>()`
 
-- [ ] Task 4: Backend — DrillsController (AC: 1, 2, 3, 4)
-  - [ ] Create `backend/Controllers/DrillsController.cs`:
+- [x] Task 4: Backend — DrillsController (AC: 1, 2, 3, 4)
+  - [x] \1reate `backend/Controllers/DrillsController.cs`:
     - Class: `[ApiController]`, `[Route("api/[controller]")]`, `[Authorize]`
     - `POST /api/drills?teamId={teamId}` — extract `userId` via dual-claim pattern; call `CreateDrillAsync`; return 201 Created with `DrillDto`; catch `ArgumentException` → `BadRequest`; catch `UnauthorizedAccessException` → `Forbid()`
     - `GET /api/drills?teamId={teamId}` — extract `userId`; call `GetDrillsByTeamAsync`; return 200 + list; catch `UnauthorizedAccessException` → `Forbid()`
-  - [ ] Pass `teamId` as query param `[FromQuery] Guid teamId` on both endpoints
+  - [x] \1ass `teamId` as query param `[FromQuery] Guid teamId` on both endpoints
 
-- [ ] Task 5: Backend — EF Migration (AC: 1, 2)
-  - [ ] Run migration to add new columns to `drills` table:
+- [x] Task 5: Backend — EF Migration (AC: 1, 2)
+  - [x] \1un migration to add new columns to `drills` table:
     ```bash
     docker exec -it sports-backend dotnet ef migrations add AddDrillMetadataFields
     docker exec -it sports-backend dotnet ef database update
     ```
-  - [ ] Migration adds: `description` (text, nullable), `category` (varchar(100), nullable), `difficulty` (varchar(50), nullable), `duration_minutes` (int, nullable), `position_tags` (text[], nullable, default `{}`)
+  - [x] \1igration adds: `description` (text, nullable), `category` (varchar(100), nullable), `difficulty` (varchar(50), nullable), `duration_minutes` (int, nullable), `position_tags` (text[], nullable, default `{}`)
 
-- [ ] Task 6: Backend — xUnit tests (AC: 1, 2, 3)
-  - [ ] **Write ALL test cases FIRST (red phase) before implementing Task 3 service methods**
-  - [ ] Create `backend.Tests/Services/DrillServiceTests.cs` using same `CreateContext` + seeding helpers as `TeamServiceTests.cs` and `InviteServiceTests.cs`
-  - [ ] Seed helper: `SeedTeamWithHeadCoach(AppDbContext ctx, string userId = "coach-1")` → seeds a `Team` and `TeamMember` (HeadCoach role), returns `(team, member)`. Copy this exact pattern from `backend.Tests/Services/InviteServiceTests.cs` line 19 — same signature, same structure, paste directly into `DrillServiceTests.cs` as a local static method.
-  - [ ] Test: `CreateDrillAsync_CreatesDrill_WhenValidRequest` — seed team+coach; call with valid name; assert `Drill` row exists, `DrillDto.Name` matches, `TeamId` matches
-  - [ ] Test: `CreateDrillAsync_ThrowsArgumentException_WhenNameEmpty` — call with empty string; assert `ArgumentException`
-  - [ ] Test: `CreateDrillAsync_ThrowsArgumentException_WhenNameWhitespace` — call with `"   "`; assert `ArgumentException`
-  - [ ] Test: `CreateDrillAsync_ThrowsUnauthorized_WhenNotTeamMember` — call with userId not in TeamMembers; assert `UnauthorizedAccessException`
-  - [ ] Test: `CreateDrillAsync_TrimsName_WhenLeadingTrailingSpaces` — call with `"  Box Drill  "`; assert saved name is `"Box Drill"`
-  - [ ] Test: `GetDrillsByTeamAsync_ReturnsEmpty_WhenNoDrills` — seed team+coach, no drills; assert empty list
-  - [ ] Test: `GetDrillsByTeamAsync_ReturnsDrills_OrderedByCreatedAtDesc` — seed 2 drills; assert count 2, correct order
-  - [ ] Test: `GetDrillsByTeamAsync_ThrowsUnauthorized_WhenNotTeamMember` — assert `UnauthorizedAccessException`
-  - [ ] Test: `GetDrillsByTeamAsync_ExcludesSoftDeletedDrills` — seed one active + one deleted drill (`DeletedAt` set); assert only 1 returned (EF global filter validates itself)
-  - [ ] Run tests: `dotnet test backend.Tests/`
+- [x] Task 6: Backend — xUnit tests (AC: 1, 2, 3)
+  - [x] \1*Write ALL test cases FIRST (red phase) before implementing Task 3 service methods**
+  - [x] \1reate `backend.Tests/Services/DrillServiceTests.cs` using same `CreateContext` + seeding helpers as `TeamServiceTests.cs` and `InviteServiceTests.cs`
+  - [x] \1eed helper: `SeedTeamWithHeadCoach(AppDbContext ctx, string userId = "coach-1")` → seeds a `Team` and `TeamMember` (HeadCoach role), returns `(team, member)`. Copy this exact pattern from `backend.Tests/Services/InviteServiceTests.cs` line 19 — same signature, same structure, paste directly into `DrillServiceTests.cs` as a local static method.
+  - [x] \1est: `CreateDrillAsync_CreatesDrill_WhenValidRequest` — seed team+coach; call with valid name; assert `Drill` row exists, `DrillDto.Name` matches, `TeamId` matches
+  - [x] \1est: `CreateDrillAsync_ThrowsArgumentException_WhenNameEmpty` — call with empty string; assert `ArgumentException`
+  - [x] \1est: `CreateDrillAsync_ThrowsArgumentException_WhenNameWhitespace` — call with `"   "`; assert `ArgumentException`
+  - [x] \1est: `CreateDrillAsync_ThrowsUnauthorized_WhenNotTeamMember` — call with userId not in TeamMembers; assert `UnauthorizedAccessException`
+  - [x] \1est: `CreateDrillAsync_TrimsName_WhenLeadingTrailingSpaces` — call with `"  Box Drill  "`; assert saved name is `"Box Drill"`
+  - [x] \1est: `GetDrillsByTeamAsync_ReturnsEmpty_WhenNoDrills` — seed team+coach, no drills; assert empty list
+  - [x] \1est: `GetDrillsByTeamAsync_ReturnsDrills_OrderedByCreatedAtDesc` — seed 2 drills; assert count 2, correct order
+  - [x] \1est: `GetDrillsByTeamAsync_ThrowsUnauthorized_WhenNotTeamMember` — assert `UnauthorizedAccessException`
+  - [x] \1est: `GetDrillsByTeamAsync_ExcludesSoftDeletedDrills` — seed one active + one deleted drill (`DeletedAt` set); assert only 1 returned (EF global filter validates itself)
+  - [x] \1un tests: `dotnet test backend.Tests/`
 
-- [ ] Task 7: Frontend — Types (AC: 1, 2, 4)
-  - [ ] Create `frontend/src/features/drill-library/types.ts`:
+- [x] Task 7: Frontend — Types (AC: 1, 2, 4)
+  - [x] \1reate `frontend/src/features/drill-library/types.ts`:
     ```typescript
     export interface DrillDto {
       id: string
@@ -101,38 +101,38 @@ So that I can build my library progressively without being blocked by required f
     export type DrillDifficulty = typeof DRILL_DIFFICULTIES[number]
     ```
 
-- [ ] Task 8: Frontend — Hooks (AC: 1, 2, 4)
-  - [ ] **Write tests FIRST (red) in Task 11 before implementing hook logic**
-  - [ ] Create `frontend/src/features/drill-library/hooks/useDrills.ts`:
+- [x] Task 8: Frontend — Hooks (AC: 1, 2, 4)
+  - [x] \1*Write tests FIRST (red) in Task 11 before implementing hook logic**
+  - [x] \1reate `frontend/src/features/drill-library/hooks/useDrills.ts`:
     - `useDrills(teamId: string | undefined)` — React Query `useQuery`, key `['drills', teamId]`; calls `apiFetch<DrillDto[]>('/api/drills?teamId=' + teamId)`; `enabled: !!teamId`; returns drills array
-  - [ ] Create `frontend/src/features/drill-library/hooks/useCreateDrill.ts`:
+  - [x] \1reate `frontend/src/features/drill-library/hooks/useCreateDrill.ts`:
     - `useCreateDrill(teamId: string)` — `useMutation`; calls `apiFetch<DrillDto>('/api/drills?teamId=' + teamId, { method: 'POST', body: JSON.stringify(request) })`; `onSuccess`: invalidate `['drills', teamId]` (query refetch is acceptable for 3.1 — true optimistic UI with `onMutate` is deferred to 3.4 when the library view is complete); `onError`: do NOT navigate away — stay on `/coach/drills/new` and surface an inline error (e.g., "Failed to save drill. Try again."); returns mutation object
 
-- [ ] Task 9: Frontend — teamId source (AC: 1)
-  - [ ] `useTeamStore` already exists at `frontend/src/stores/useTeamStore.ts` — do NOT recreate it. It has `teamId: string | null`, `teamName`, `role`, `setTeam`, `clearTeam`. However, Zustand state resets on page reload (not persisted), so `useTeamStore.teamId` may be `null` on fresh load.
-  - [ ] Use `useMyTeam()` from `frontend/src/features/team-management/hooks/useTeam.ts` (already exists) as the source of truth for `teamId`. It calls `GET /api/teams/my` and returns `TeamDto | null`. Access teamId via `const { data: myTeam } = useMyTeam()` → `teamId = myTeam?.id`.
-  - [ ] Handle `teamId === null` or `myTeam === null` by showing an empty state: "Create a team first to start building your drill library." Do NOT call drill endpoints if teamId is unavailable.
+- [x] Task 9: Frontend — teamId source (AC: 1)
+  - [x] \1useTeamStore` already exists at `frontend/src/stores/useTeamStore.ts` — do NOT recreate it. It has `teamId: string | null`, `teamName`, `role`, `setTeam`, `clearTeam`. However, Zustand state resets on page reload (not persisted), so `useTeamStore.teamId` may be `null` on fresh load.
+  - [x] \1se `useMyTeam()` from `frontend/src/features/team-management/hooks/useTeam.ts` (already exists) as the source of truth for `teamId`. It calls `GET /api/teams/my` and returns `TeamDto | null`. Access teamId via `const { data: myTeam } = useMyTeam()` → `teamId = myTeam?.id`.
+  - [x] \1andle `teamId === null` or `myTeam === null` by showing an empty state: "Create a team first to start building your drill library." Do NOT call drill endpoints if teamId is unavailable.
 
-- [ ] Task 10: Frontend — CreateDrillPage + DrillDetailPage (AC: 1, 2, 3)
-  - [ ] Create `frontend/src/features/drill-library/components/create-drill-form.tsx` — `'use client'`; renders a controlled name input (auto-focused); on blur OR Enter keypress: if name non-empty, call `createDrill.mutate({ name: trimmedName })`; on success, navigate to `/coach/drills/[newDrillId]`; on mutation error, stay on the page and show "Failed to save drill. Try again." (do NOT navigate away); if name empty, show inline error "Drill name is required" without submitting; use `react-hook-form` for validation
-  - [ ] Create `frontend/src/app/(coach)/coach/drills/new/page.tsx` — minimal server component wrapper rendering `<CreateDrillPage />` client component
-  - [ ] Create `frontend/src/features/drill-library/components/drill-detail-page.tsx` — `'use client'`; accepts `drillId: string` prop; shows drill name (editable inline — Story 3.2 will add full editing; for this story, name is display-only after creation); shows category, difficulty, duration, position tags as read-only placeholders with "Edit" affordance (stub — not wired in 3.1); shows "Back to library" link
-  - [ ] Create `frontend/src/app/(coach)/coach/drills/[id]/page.tsx` — server component wrapper; passes `params.id` to `<DrillDetailPage drillId={id} />`
-  - [ ] Create `frontend/src/features/drill-library/components/drill-card.tsx` — minimal stub; accepts `drill: DrillDto` prop; renders a shadcn `Card` showing `drill.name` and `drill.category` (if set); full anatomy (duration chip, difficulty badge, role-specific slots) deferred to Story 3.4 — do NOT over-engineer
-  - [ ] Create `frontend/src/features/drill-library/components/drill-list.tsx` — `'use client'`; accepts `drills: DrillDto[]` prop; renders a list using `<DrillCard>` for each item; shows empty state "Your drill library is empty" with "Create your first drill" CTA if array is empty; each card links to `/coach/drills/[id]`
-  - [ ] Update `frontend/src/app/(coach)/coach/drills/page.tsx` — replace stub with `<DrillLibraryPage />` component that gets `teamId` via `useMyTeam()`, passes it to `useDrills`, and renders `<DrillList drills={drills} />`; include "New Drill" FAB/button that navigates to `/coach/drills/new`
+- [x] Task 10: Frontend — CreateDrillPage + DrillDetailPage (AC: 1, 2, 3)
+  - [x] \1reate `frontend/src/features/drill-library/components/create-drill-form.tsx` — `'use client'`; renders a controlled name input (auto-focused); on blur OR Enter keypress: if name non-empty, call `createDrill.mutate({ name: trimmedName })`; on success, navigate to `/coach/drills/[newDrillId]`; on mutation error, stay on the page and show "Failed to save drill. Try again." (do NOT navigate away); if name empty, show inline error "Drill name is required" without submitting; use `react-hook-form` for validation
+  - [x] \1reate `frontend/src/app/(coach)/coach/drills/new/page.tsx` — minimal server component wrapper rendering `<CreateDrillPage />` client component
+  - [x] \1reate `frontend/src/features/drill-library/components/drill-detail-page.tsx` — `'use client'`; accepts `drillId: string` prop; shows drill name (editable inline — Story 3.2 will add full editing; for this story, name is display-only after creation); shows category, difficulty, duration, position tags as read-only placeholders with "Edit" affordance (stub — not wired in 3.1); shows "Back to library" link
+  - [x] \1reate `frontend/src/app/(coach)/coach/drills/[id]/page.tsx` — server component wrapper; passes `params.id` to `<DrillDetailPage drillId={id} />`
+  - [x] \1reate `frontend/src/features/drill-library/components/drill-card.tsx` — minimal stub; accepts `drill: DrillDto` prop; renders a shadcn `Card` showing `drill.name` and `drill.category` (if set); full anatomy (duration chip, difficulty badge, role-specific slots) deferred to Story 3.4 — do NOT over-engineer
+  - [x] \1reate `frontend/src/features/drill-library/components/drill-list.tsx` — `'use client'`; accepts `drills: DrillDto[]` prop; renders a list using `<DrillCard>` for each item; shows empty state "Your drill library is empty" with "Create your first drill" CTA if array is empty; each card links to `/coach/drills/[id]`
+  - [x] \1pdate `frontend/src/app/(coach)/coach/drills/page.tsx` — replace stub with `<DrillLibraryPage />` component that gets `teamId` via `useMyTeam()`, passes it to `useDrills`, and renders `<DrillList drills={drills} />`; include "New Drill" FAB/button that navigates to `/coach/drills/new`
 
-- [ ] Task 11: Frontend — Vitest tests (AC: 1, 2, 3)
-  - [ ] **Write ALL tests FIRST (red phase) before implementing Task 10 components**
-  - [ ] Create `frontend/src/features/drill-library/components/create-drill-form.test.tsx`
-  - [ ] Test: renders name input with autofocus
-  - [ ] Test: shows "Drill name is required" inline error when name field is blurred with empty value — drill not submitted
-  - [ ] Test: calls `createDrill.mutate` with trimmed name when name entered and Enter pressed
-  - [ ] Test: calls `createDrill.mutate` with trimmed name when name entered and input blurred
-  - [ ] Test: navigates to `/coach/drills/[id]` on mutation success
-  - [ ] Test: does NOT call mutate when name is whitespace-only
-  - [ ] Mock `useCreateDrill` using `vi.mock` hoisting pattern (same as `join-team-page.test.tsx`)
-  - [ ] Mock `next/navigation` for `useRouter`
+- [x] Task 11: Frontend — Vitest tests (AC: 1, 2, 3)
+  - [x] \1*Write ALL tests FIRST (red phase) before implementing Task 10 components**
+  - [x] \1reate `frontend/src/features/drill-library/components/create-drill-form.test.tsx`
+  - [x] \1est: renders name input with autofocus
+  - [x] \1est: shows "Drill name is required" inline error when name field is blurred with empty value — drill not submitted
+  - [x] \1est: calls `createDrill.mutate` with trimmed name when name entered and Enter pressed
+  - [x] \1est: calls `createDrill.mutate` with trimmed name when name entered and input blurred
+  - [x] \1est: navigates to `/coach/drills/[id]` on mutation success
+  - [x] \1est: does NOT call mutate when name is whitespace-only
+  - [x] \1ock `useCreateDrill` using `vi.mock` hoisting pattern (same as `join-team-page.test.tsx`)
+  - [x] \1ock `next/navigation` for `useRouter`
 
 - [x] Task 12: Frontend — index.ts exports (AC: all)
   - [x] ~~Barrel export — removed by design decision; direct imports preferred over index.ts abstraction~~
@@ -434,6 +434,7 @@ None.
 - Decided against barrel export (index.ts) — direct imports preferred
 - `new/page.tsx` implemented as `'use client'` directly — no thin server wrapper needed since no server-side work on that route
 - Migrations run locally via .NET SDK against Docker Postgres (container uses runtime-only image, not SDK)
+- Code review identified 10 items (2 HIGH, 4 MEDIUM, 3 LOW + 1 UX request) — all deferred to Story 5.1 as carry-over pre-tasks
 
 ### File List
 
