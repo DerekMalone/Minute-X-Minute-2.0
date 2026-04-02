@@ -21,10 +21,14 @@ builder.Services.AddDbContext<AppDbContext>(options =>
            .UseSnakeCaseNamingConvention());
 
 // Add CORS
+var allowedOrigins = builder.Configuration["ALLOWED_ORIGINS"]
+    ?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+    ?? ["http://localhost:3000", "http://localhost:4200"];
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
-        policy.WithOrigins("http://localhost:3000", "http://localhost:4200")
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod());
 });

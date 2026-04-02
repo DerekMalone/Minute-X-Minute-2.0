@@ -74,7 +74,7 @@ development_status:
   # Epic 8: Deployment Readiness & Cloud Infrastructure
   # Sequenced after 3-1 (create a drill) and before 5-1 (create a practice plan) — beta launch gate
   epic-8: in-progress
-  8-1-cors-origins-env-var-driven: ready-for-dev
+  8-1-cors-origins-env-var-driven: review
   8-2-cloud-run-port-env-var-support: backlog
   8-3-backend-dockerignore: backlog
   8-4-frontend-dockerfile: backlog

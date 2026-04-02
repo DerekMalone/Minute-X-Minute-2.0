@@ -1,6 +1,6 @@
 # Story 8.1: CORS Origins Environment-Variable Driven
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -18,24 +18,24 @@ So that the API accepts requests from the Vercel production domain without a cod
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Update `backend/Program.cs` CORS policy (AC: 1, 2, 3)
-  - [ ] Locate the hardcoded `.WithOrigins("http://localhost:3000", "http://localhost:4200")` at line 27
-  - [ ] Replace with env-var driven logic:
+- [x] Task 1: Update `backend/Program.cs` CORS policy (AC: 1, 2, 3)
+  - [x] Locate the hardcoded `.WithOrigins("http://localhost:3000", "http://localhost:4200")` at line 27
+  - [x] Replace with env-var driven logic:
     ```csharp
     var allowedOrigins = builder.Configuration["ALLOWED_ORIGINS"]
         ?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
         ?? ["http://localhost:3000", "http://localhost:4200"];
     ```
-  - [ ] Pass `allowedOrigins` to `.WithOrigins(allowedOrigins)` in the CORS policy
-  - [ ] No other changes to `Program.cs` — keep policy name `"AllowFrontend"`, keep `AllowAnyHeader()` and `AllowAnyMethod()`
+  - [x] Pass `allowedOrigins` to `.WithOrigins(allowedOrigins)` in the CORS policy
+  - [x] No other changes to `Program.cs` — keep policy name `"AllowFrontend"`, keep `AllowAnyHeader()` and `AllowAnyMethod()`
 
-- [ ] Task 2: Update `docker-compose.yml` backend environment block (AC: 2)
-  - [ ] Add `ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:4200}` to the `backend` service `environment:` section (after line 29)
-  - [ ] The `:-` syntax means: use env var value if set, else fall back to the hardcoded default — local dev continues to work with no `.env` entry required
+- [x] Task 2: Update `docker-compose.yml` backend environment block (AC: 2)
+  - [x] Add `ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:4200}` to the `backend` service `environment:` section (after line 29)
+  - [x] The `:-` syntax means: use env var value if set, else fall back to the hardcoded default — local dev continues to work with no `.env` entry required
 
-- [ ] Task 3: Add `ALLOWED_ORIGINS` to root `.env` (AC: 2)
-  - [ ] Append `ALLOWED_ORIGINS=http://localhost:3000,http://localhost:4200` to root `.env`
-  - [ ] This is optional for local dev (docker-compose has a fallback default) but documents the variable and allows easy override
+- [x] Task 3: Add `ALLOWED_ORIGINS` to root `.env` (AC: 2)
+  - [x] Append `ALLOWED_ORIGINS=http://localhost:3000,http://localhost:4200` to root `.env`
+  - [x] This is optional for local dev (docker-compose has a fallback default) but documents the variable and allows easy override
 
 - [ ] Task 4: Manual verification (AC: 1, 2)
   - [ ] Run `docker-compose up postgres backend` (without setting `ALLOWED_ORIGINS` in `.env`) — confirm the backend starts with no errors
@@ -164,6 +164,19 @@ claude-sonnet-4-6
 
 ### Debug Log References
 
+_None — straightforward configuration wiring, no issues encountered._
+
 ### Completion Notes List
 
+- Replaced hardcoded `.WithOrigins(...)` in `backend/Program.cs` with env-var-driven split logic using `builder.Configuration["ALLOWED_ORIGINS"]` with `??` fallback to local dev defaults.
+- Added `ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:4200}` to `docker-compose.yml` backend environment block using Docker Compose `:-` fallback syntax.
+- Appended `ALLOWED_ORIGINS=http://localhost:3000,http://localhost:4200` to root `.env` to document the variable and allow easy override.
+- Policy name `"AllowFrontend"`, `AllowAnyHeader()`, `AllowAnyMethod()`, and `app.UseCors(...)` call remain unchanged.
+- No tests added per story Dev Notes (pure configuration change, no business logic).
+- Task 4 (manual verification) is left for the developer to run: `docker-compose up postgres backend` and confirm CORS works from `http://localhost:3000`.
+
 ### File List
+
+- `backend/Program.cs`
+- `docker-compose.yml`
+- `.env`
