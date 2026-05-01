@@ -43,6 +43,7 @@ export function CreateDrillForm({ teamId }: Props) {
 
   function handleBlur(e: React.FocusEvent<HTMLInputElement>) {
     onBlur(e)
+    if (createDrill.isPending || createDrill.isSuccess) return
     handleSubmit(submit)()
   }
 
